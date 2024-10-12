@@ -1064,10 +1064,7 @@ left join orderdetails od on o.orderid = od.orderid
 where year(o.orderdate) = 1997
 group by monthname(o.orderdate);
 
--- 4. Order Fulfillment Time:
--- not enough information
-
--- 5. Products by Category with No Sales:
+-- 4. Products by Category with No Sales:
 select p.productname,c.categoryname
 from products p
 left join categories c on p.categoryid = c.categoryid
@@ -1076,23 +1073,23 @@ where od.productid is null
 group by c.categoryname,p.productname
 order by c.categoryname;
 
--- 6. Customers with Multiple Orders on the Same Date:
+-- 5. Customers with Multiple Orders on the Same Date:
 select customerid,count(orderid) as no_of_orders,date(orderdate) as date
 from orders
 group by customerid,date(orderdate)
 having count(orderid) > 1;
 
--- 7. Average Discount per Product:
+-- 6. Average Discount per Product:
 select productid,avg(discount) as average_discount
 from orderdetails
 group by productid;
 
--- 8. Products Ordered by Each Customer:
+-- 7. Products Ordered by Each Customer:
 select o.customerid,p.productname,od.quantity from orders o
 left join orderdetails od on o.orderid = od.orderid
 left join products p on od.productid = p.productid;
 
--- 9. Employee Sales Ranking:
+-- 8. Employee Sales Ranking:
 select e.employeeid,concat_ws(' ',e.Lastname,e.Firstname) as 'Full Name',sum(od.quantity*od.unitprice*(1 - od.Discount)) as total_sales,
 rank() over(order by sum(od.quantity*od.unitprice*(1 - od.Discount)) desc) as sales_rank
 from employees e 
@@ -1101,7 +1098,7 @@ left join orderdetails od on o.orderid = od.orderid
 group by e.employeeid
 order by 3 desc ;
 
--- 10. Sales by Country and Category:
+-- 9. Sales by Country and Category:
 SELECT c.Country,ca.CategoryName,SUM(od.UnitPrice * od.Quantity*(1 - od.Discount)) AS TotalSales
 FROM orderdetails od
 JOIN orders o ON od.OrderID = o.OrderID
@@ -1111,7 +1108,7 @@ JOIN categories ca ON p.CategoryID = ca.CategoryID
 GROUP BY c.Country,ca.CategoryName
 ORDER BY c.Country,ca.CategoryName;
 
--- 11. Year-over-Year Sales Growth:
+-- 10. Year-over-Year Sales Growth:
 WITH SalesPerYear AS (
     SELECT p.ProductID,YEAR(o.OrderDate) AS Year,SUM(od.UnitPrice * od.Quantity*(1 - od.Discount)) AS TotalSales
     FROM orderdetails od
@@ -1132,20 +1129,20 @@ SELECT ProductID,Year,CurrentYearSales as total_sales,SalesGrowthPercentage
 FROM SalesGrowth
 ORDER BY ProductID,Year;
     
-    -- 12. Order Quantity Percentile:
+-- 11. Order Quantity Percentile:
 select orderid, sum(quantity) as total_quantity,
 percent_rank() over (order by sum(quantity)) AS PercentileRank
 from orderdetails
 group by orderid;
 
--- 13. Products Never Reordered:
+-- 12. Products Never Reordered:
 SELECT p.ProductID, p.ProductName
 FROM products p
 left JOIN orderdetails od ON p.ProductID = od.ProductID
 GROUP BY p.ProductID, p.ProductName
 HAVING COUNT(DISTINCT od.orderid) = 1;
 
--- 14. Most Valuable Product by Revenue:
+-- 13. Most Valuable Product by Revenue:
 WITH CategoryRevenue AS (
     SELECT c.CategoryName,p.ProductName,SUM(od.Quantity * od.UnitPrice*(1 - od.Discount)) AS Revenue,
         ROW_NUMBER() OVER (PARTITION BY c.CategoryName ORDER BY SUM(od.Quantity * od.UnitPrice*(1 - od.Discount)) DESC) AS rank_
@@ -1159,7 +1156,7 @@ SELECT CategoryName,ProductName,Revenue
 FROM CategoryRevenue
 WHERE rank_ = 1;
 
--- 15. Complex Order Details:
+-- 14. Complex Order Details:
 SELECT o.OrderID,SUM(od.Quantity * od.UnitPrice * (1 - od.Discount)) AS TotalOrderPrice
 FROM orders o
 JOIN orderdetails od ON o.OrderID = od.OrderID
